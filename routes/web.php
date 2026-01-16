@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\PersonalInfoController;
 
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -51,20 +53,29 @@ Route::post('/email/verification-notification', function (Request $request) {
     return back()->with('message', 'Verification link sent!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
-Route::get('/email/auto-verify', function (Request $request) {
-    if (app()->environment('local')) {
-        $request->user()->markEmailAsVerified();
-        return redirect('/home')->with('success', 'Email auto-verified for local development!');
-    }
-    abort(403);
-})->middleware('auth')->name('verification.auto');
-
-Route::get('/register-role', [AuthController::class, 'showRegisterRole'])->name('register.role');
-Route::get('/register/{role}', [AuthController::class, 'showRegister'])->name('register.form');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/home', function() {
+        return redirect('/' . auth()->user()->role);
+    });
+
+    // Profile Routes
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Common Personal Info Form
+    Route::get('/personal-info', [PersonalInfoController::class, 'create'])->name('profile.personal.form');
+    Route::post('/personal-info', [PersonalInfoController::class, 'store'])->name('profile.personal.store');
+
+    // Student Profile Form
+    Route::get('/student-profile', [StudentProfileController::class, 'showForm'])->name('profile.student.form');
+    Route::post('/student-profile', [StudentProfileController::class, 'store'])->name('profile.student.store');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin', [DashboardController::class, 'admin'])->middleware('role:admin');
@@ -73,14 +84,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/support', [DashboardController::class, 'support'])->middleware('role:support');
     Route::get('/student', [DashboardController::class, 'student'])->middleware('role:student');
     Route::get('/reseller_agent', [DashboardController::class, 'reseller_agent'])->middleware('role:reseller_agent');
-
-    Route::get('/home', function() {
-        return redirect('/' . auth()->user()->role);
-    });
-
-    // Profile Routes
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // Notification Routes
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

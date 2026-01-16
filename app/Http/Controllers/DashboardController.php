@@ -59,6 +59,12 @@ class DashboardController extends Controller
 
     public function student()
     {
+        if (!auth()->user()->personalInfo) {
+            return redirect()->route('profile.personal.form')->with('warning', 'Please complete your personal information first.');
+        }
+        if (!auth()->user()->studentProfile) {
+            return redirect()->route('profile.student.form')->with('warning', 'Please complete your student profile first.');
+        }
         return view('dashboards.student');
     }
 

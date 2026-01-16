@@ -10,18 +10,9 @@ use Illuminate\Auth\Events\Registered;
 
 class AuthController extends Controller
 {
-    public function showRegisterRole()
+    public function showRegister()
     {
-        return view('auth.register-role');
-    }
-
-    public function showRegister($role)
-    {
-        $validRoles = ['manager', 'support', 'student', 'reseller_agent'];
-        if (!in_array($role, $validRoles)) {
-            return redirect('/register-role')->with('error', 'Invalid role');
-        }
-        return view('auth.register', ['role' => $role]);
+        return view('auth.register');
     }
 
     public function register(Request $request)
@@ -32,7 +23,6 @@ class AuthController extends Controller
             'phone' => 'required|string|max:20|unique:users',
             'password' => 'required|string|min:8',
             'confirm_password' => 'required|string|min:8|same:password',
-            'role' => 'required|in:manager,support,student,reseller_agent',
         ]);
 
         $user = User::create([
@@ -40,8 +30,8 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'status' => app()->environment('local') ? 'active' : 'pending',
+            // 'role' => 'student', // Default role
+            // 'status' => 'pending_profile',
         ]);
 
         if (app()->environment('local')) {
@@ -50,13 +40,7 @@ class AuthController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        if (app()->environment('local')) {
-            return redirect('/' . $user->role)->with('success', 'Registration successful! (Auto-verified for local)');
-        }
-
-        return redirect('/email/verify')->with('success', 'Registration successful! Please check your email for verification link.');
+        return redirect()->route('login')->with('success', 'Registration successful! Please login to continue.');
     }
 
     public function showLogin()
