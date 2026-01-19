@@ -1,241 +1,182 @@
-@extends('layouts.master')
+@extends('admin.layouts.app')
 
-@section('title', 'User Details')
+@section('title', 'View User')
+@section('page-title', 'User Details: ' . $user->name)
 
-@section('navbar-title', '👤 User Details')
-
-@section('custom-css')
-    .details-container {
-        background: white;
-        padding: 40px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .profile-header {
-        display: flex;
-        align-items: center;
-        gap: 30px;
-        margin-bottom: 40px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 40px;
-        font-weight: bold;
-    }
-
-    .profile-info h2 {
-        margin: 0;
-        color: #333;
-        font-size: 24px;
-    }
-
-    .profile-info p {
-        margin: 5px 0 0;
-        color: #666;
-    }
-
-    .details-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 25px;
-    }
-
-    .detail-item {
-        margin-bottom: 10px;
-    }
-
-    .detail-label {
-        font-size: 12px;
-        text-transform: uppercase;
-        color: #999;
-        font-weight: 600;
-        letter-spacing: 1px;
-        margin-bottom: 5px;
-    }
-
-    .detail-value {
-        font-size: 16px;
-        color: #333;
-        font-weight: 500;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .status-active {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .status-pending {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .status-frozen {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    .role-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        text-transform: uppercase;
-        font-weight: bold;
-        background: #e9ecef;
-        color: #495057;
-    }
-
-    .actions {
-        margin-top: 40px;
-        display: flex;
-        gap: 15px;
-    }
-
-    .btn {
-        padding: 12px 25px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-edit {
-        background: #ffc107;
-        color: #000;
-    }
-
-    .btn-back {
-        background: #6c757d;
-        color: white;
-    }
-
-    .btn-delete {
-        background: #dc3545;
-        color: white;
-    }
-
-    .btn-login {
-        background: #6f42c1;
-        color: white;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+@section('page-actions')
+<div class="d-flex gap-2">
+    <!-- <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-t-y">
+        <i class="fas fa-edit me-2"></i>Edit User
+    </a> -->
+    <a href="{{ route('admin.users.index') }}" class="btn btn-t-g">
+        <i class="fas fa-arrow-left me-2"></i>Back to Users
+    </a>
+</div>
 @endsection
 
 @section('content')
-    <div class="details-container">
-        <div class="profile-header">
-            <div class="profile-avatar">
-                {{ strtoupper(substr($user->name, 0, 1)) }}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 koa-tb-card bg-grey">
+            <div class="card-header border-0 koa-card-header">
+                <h3 class="card-title mb-0 text-dark fs-4 py-2">User Information</h3>
             </div>
-            <div class="profile-info">
-                <h2>{{ $user->name }}</h2>
-                <p>User ID: #{{ $user->id }}</p>
-            </div>
-        </div>
-
-        <div class="details-grid">
-            <div class="detail-item">
-                <div class="detail-label">Email Address</div>
-                <div class="detail-value">{{ $user->email }}</div>
-            </div>
-
-            <div class="detail-item">
-                <div class="detail-label">Phone Number</div>
-                <div class="detail-value">{{ $user->phone }}</div>
-            </div>
-
-            <div class="detail-item">
-                <div class="detail-label">Account Role</div>
-                <div class="detail-value">
-                    <span class="role-badge">{{ $user->role }}</span>
+            <div class="card-body p-4 koa-tb-cnt">
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Name:</strong></div>
+                    <div class="col-sm-9 text-dark">{{ $user->name }}</div>
                 </div>
-            </div>
-
-            <div class="detail-item">
-                <div class="detail-label">Account Status</div>
-                <div class="detail-value">
-                    <span class="status-badge status-{{ $user->status }}">
-                        {{ ucfirst($user->status) }}
-                    </span>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Email:</strong></div>
+                    <div class="col-sm-9 text-dark">{{ $user->email }}</div>
                 </div>
-            </div>
-
-            <div class="detail-item">
-                <div class="detail-label">Current Credit Balance</div>
-                <div class="detail-value" style="color: #28a745; font-size: 20px;">
-                    ${{ number_format($user->credit, 2) }}
+                @if($user->phone)
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Phone Number:</strong></div>
+                    <div class="col-sm-9 text-dark">{{ $user->phone }}</div>
                 </div>
-            </div>
-
-            <div class="detail-item">
-                <div class="detail-label">Created At</div>
-                <div class="detail-value">{{ $user->created_at->format('F d, Y H:i') }}</div>
-            </div>
-
-            <div class="detail-item">
-                <div class="detail-label">Last Updated</div>
-                <div class="detail-value">{{ $user->updated_at->format('F d, Y H:i') }}</div>
-            </div>
-        </div>
-
-        <div class="details-grid">
-            <!-- ... existing fields ... -->
-        </div>
-
-        <div style="margin-top: 30px; padding: 20px; background: #f8faff; border-radius: 8px; border: 1px solid #e1e8f0;">
-            <h4 style="margin-bottom: 15px; color: #333;">💰 Add Credit to Account</h4>
-            <form action="{{ route('admin.users.add-credit', $user->id) }}" method="POST" style="display: flex; gap: 10px; align-items: flex-end;">
-                @csrf
-                <div style="flex: 1;">
-                    <label style="font-size: 12px; font-weight: 600; color: #666; display: block; margin-bottom: 5px;">Amount (USD)</label>
-                    <input type="number" name="amount" step="0.01" min="0.01" max="300" placeholder="0.00" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                @endif
+                @if($user->company_name)
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Company Name:</strong></div>
+                    <div class="col-sm-9 text-dark">{{ $user->company_name }}</div>
                 </div>
-                <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: 600; cursor: pointer; height: 42px;">
-                    ➕ Add Credit
-                </button>
-            </form>
-            <p style="font-size: 11px; color: #999; margin-top: 8px;">Maximum allowed credit addition at once is $300.</p>
-        </div>
-
-        <div class="actions">
-            <a href="{{ route('admin.users.index') }}" class="btn btn-back">⬅️ Back to List</a>
-            <form action="{{ route('admin.users.login-as', $user->id) }}" method="POST" style="display: inline;">
-                @csrf
-                <button type="submit" class="btn btn-login">🔑 Login As User</button>
-            </form>
-            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-edit">✏️ Edit User</a>
-            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-delete">🗑️ Delete User</button>
-            </form>
+                @endif
+            </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 koa-tb-card bg-grey">
+            <div class="card-header border-0 koa-card-header">
+                <h3 class="card-title mb-0 text-dark fs-4 py-2">User Details</h3>
+            </div>
+            <div class="card-body p-4 koa-tb-cnt">
+                <div class="row mb-2">
+                    <div class="col-6"><strong>Account Type:</strong></div>
+                    <div class="col-6">
+                        <span class="badge fw-normal px-3 py-2 text-nowrap
+                        @if($user->account_type === 'admin') koa-badge-green
+                        @elseif($user->account_type === 'recruiter') koa-badge-yellow
+                        @elseif($user->account_type === 'freelancer') koa-badge-yellow
+                        @elseif($user->account_type === 'User') koa-badge-yellow
+                        @else badge-secondary
+                        @endif">
+                            <!-- {{ ucfirst($user->account_type ?? 'User')  }} -->
+                        </span>
+                    </div>
+                </div>
+
+                <!-- <div class="row mb-2">
+                    <div class="col-6"><strong></strong>Profile Status:</strong></div>
+                    <div class="col-6">
+                        <span class="badge fw-normal px-3 py-2 text-nowrap
+                        @if($user->profile_verification_status === 'verified') koa-badge-green
+                        @elseif($user->profile_verification_status === 'pending') koa-badge-yellow
+                        @else koa-badge-red-outline
+                        @endif">
+                            {{ ucfirst($user->profile_verification_status) }}
+                        </span>
+                    </div>
+                </div> -->
+
+                <div class="row mb-2">
+                    <div class="col-6"><strong>Email Status:</strong></div>
+                    <div class="col-6">
+                        <span class="badge fw-normal px-3 py-2 text-nowrap
+                        @if($user->email_verified_at) koa-badge-green
+                        @else koa-badge-red-outline
+                        @endif">
+                            {{ $user->email_verified_at ? 'Email Approved' : 'Email Disapproved' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-6"><strong>Created:</strong></div>
+                    <div class="col-6">
+                        <small class="text-muted">{{ $user->created_at->format('M d, Y H:i') }}</small>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-6"><strong>Updated:</strong></div>
+                    <div class="col-6">
+                        <small class="text-muted">{{ $user->updated_at->format('M d, Y H:i') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 koa-tb-card mt-4 bg-grey">
+            <div class="card-header border-0 koa-card-header">
+                <h3 class="card-title mb-0 text-dark fs-4 py-2">Quick Actions</h3>
+            </div>
+            <div class="card-body p-4 koa-tb-cnt">
+                <div class="d-grid gap-2">
+                    @if($user->profile_verification_status === 'pending')
+                    <form action="{{ route('admin.users.verify-profile', $user) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn fw-medium px-4 py-2 koa-badge-green w-100">
+                            <i class="fas fa-check me-2"></i>Verify Profile
+                        </button>
+                    </form>
+
+                    <form action="{{ route('admin.users.reject-profile', $user) }}" method="POST"
+                        onsubmit="return handleReject(this)">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="notes" id="rejection-notes">
+                        <button type="submit" class="btn fw-medium px-4 py-2 koa-badge-red-outline w-100">
+                            <i class="fas fa-times me-2"></i>Reject Profile
+                        </button>
+                    </form>
+
+                    <script>
+                        function handleReject(form) {
+                            var reason = prompt('Please provide a reason for rejection:');
+                            if (reason !== null && reason.trim() !== '') {
+                                form.querySelector('#rejection-notes').value = reason;
+                                return true;
+                            }
+                            return false;
+                        }
+                    </script>
+                    @endif
+
+                    <!-- <a href="{{ route('admin.users.edit', $user) }}" class="btn fw-medium px-4 py-2 koa-badge-green w-100">
+                        <i class="fas fa-edit me-2"></i>Edit User
+                    </a> -->
+
+                    <!-- <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
+                        onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn fw-medium px-4 py-2 koa-badge-red-outline w-100">
+                            <i class="fas fa-trash me-2"></i>Delete User
+                        </button>
+                    </form> -->
+
+                    @if($user->email_verified_at)
+                    <form action="{{ route('admin.users.disapprove-email', $user) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn fw-medium px-4 py-2 koa-badge-yellow w-100">
+                            <i class="fas fa-times me-2"></i>Disapprove Email
+                        </button>
+                    </form>
+                    @else
+                    <form action="{{ route('admin.users.approve-email', $user) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn fw-medium px-4 py-2 koa-badge-green w-100">
+                            <i class="fas fa-check me-2"></i>Approve Email
+                        </button>
+                    </form>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
