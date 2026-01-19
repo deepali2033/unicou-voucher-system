@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\JobCategory;
+use App\Models\Service;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use App\Models\Voucher;
-use App\Observers\VoucherObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Voucher::observe(VoucherObserver::class);
+        if (! app()->runningInConsole()) {
+            app()->setLocale(session('app_locale', config('app.locale')));
+        }
+
+        View::composer('*', function ($view) {
+            $headerServices = Service::active()->ordered()->limit(10)->get();
+            $JobCategory = JobCategory::active()->ordered()->get();
+            $view->with('headerServices', $headerServices)
+                ->with('JobCategory', $JobCategory);
+        });
     }
 }

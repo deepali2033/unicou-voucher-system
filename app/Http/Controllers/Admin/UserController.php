@@ -4,23 +4,45 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Transaction;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the users.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::where('role', '!=', 'admin')->latest()->paginate(10);
+        $query = User::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by account type
+        if ($request->filled('account_type')) {
+            $query->where('account_type', $request->get('account_type'));
+        }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(15);
+
+        // Append query parameters to pagination links
+        $users->appends($request->query());
+
         return view('admin.users.index', compact('users'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for creating a new user.
      */
     public function create()
     {
@@ -28,33 +50,39 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created user in storage.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'required|string|max:20|unique:users,phone',
-            'password' => 'required|string|min:8',
-            'role' => 'required|in:manager,agent,support',
-            'status' => 'required|in:active,pending,frozen',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'nullable|string|max:20',
+            'account_type' => 'required|in:user,freelancer,recruiter,admin',
+            'company_name' => 'nullable|string|max:255',
         ]);
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'status' => $validated['status'],
+        $user = User::create([
+            'name' => $request->name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'account_type' => $request->account_type,
+            'company_name' => $request->company_name,
+            'password' => bcrypt('password123'), // Default password
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully!');
+        // Create notification
+        NotificationService::userCreated($user);
+
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified user.
      */
     public function show(User $user)
     {
@@ -62,7 +90,7 @@ class UserController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for editing the specified user.
      */
     public function edit(User $user)
     {
@@ -70,102 +98,126 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified user in storage.
      */
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'required|string|max:20|unique:users,phone,' . $user->id,
-            'password' => 'nullable|string|min:8',
-            'role' => 'required|in:manager,agent,support',
-            'status' => 'required|in:active,pending,frozen',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'account_type' => 'required|in:user,freelancer,recruiter,admin',
+            'company_name' => 'nullable|string|max:255',
         ]);
 
-        $data = [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'role' => $validated['role'],
-            'status' => $validated['status'],
-        ];
+        $user->update([
+            'name' => $request->name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'account_type' => $request->account_type,
+            'company_name' => $request->company_name,
+        ]);
 
-        if ($request->filled('password')) {
-            $data['password'] = Hash::make($validated['password']);
-        }
+        // Create notification
+        NotificationService::userUpdated($user);
 
-        $user->update($data);
-
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully!');
+        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified user from storage.
      */
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully!');
+
+        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
 
     /**
-     * Login as the specified user.
+     * Verify user profile.
      */
-    public function loginAs(User $user)
+    public function verifyProfile(User $user)
     {
-        // Prevent admin from logging as themselves or other admins if needed
-        if ($user->role === 'admin') {
-            return back()->with('error', 'Cannot impersonate another admin.');
+        $admin = Auth::user();
+
+        if ($user->verifyProfile($admin)) {
+            return redirect()->back()->with('success', 'User profile verified successfully.');
         }
 
-        session(['admin_id' => auth()->id()]);
-        auth()->login($user);
-
-        return redirect('/' . $user->role)->with('success', "Now logged in as {$user->name}");
+        return redirect()->back()->with('error', 'Failed to verify user profile.');
     }
 
     /**
-     * Stop impersonating and return to admin.
+     * Reject user profile.
      */
-    public function stopImpersonation()
+    public function rejectProfile(Request $request, User $user)
     {
-        $adminId = session('admin_id');
-        if ($adminId) {
-            $admin = User::find($adminId);
-            if ($admin) {
-                auth()->login($admin);
-                session()->forget('admin_id');
-                return redirect()->route('admin.dashboard')->with('success', 'Returned to Admin dashboard.');
-            }
-        }
-
-        return redirect('/');
-    }
-
-    /**
-     * Add credit to user account.
-     */
-    public function addCredit(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:300',
-        ], [
-            'amount.max' => 'Maximum credit limit is USD 300.',
+        $request->validate([
+            'notes' => 'nullable|string'
         ]);
 
-        $user->credit += $validated['amount'];
+        $admin = Auth::user();
+        $notes = $request->input('notes', 'Profile verification rejected by admin.');
+
+        if ($user->rejectProfile($admin, $notes)) {
+            return redirect()->back()->with('success', 'User profile rejected successfully.');
+        }
+
+        return redirect()->back()->with('error', 'Failed to reject user profile.');
+    }
+
+    /**
+     * Toggle user status (active/inactive).
+     */
+    public function toggleStatus(User $user)
+    {
+        $user->is_active = !$user->is_active;
         $user->save();
 
-        // Log the transaction
-        Transaction::create([
-            'user_id' => $user->id,
-            'amount' => $validated['amount'],
-            'type' => 'credit_add',
-            'status' => 'completed',
-            'description' => 'Manual credit addition by Admin'
-        ]);
+        $status = $user->is_active ? 'activated' : 'deactivated';
 
-        return back()->with('success', "USD {$validated['amount']} credit added to {$user->name}'s account.");
+        // Create notification
+        if ($user->is_active) {
+            NotificationService::userActivated($user);
+        } else {
+            NotificationService::userDeactivated($user);
+        }
+
+        return redirect()->back()->with('success', "User has been {$status} successfully.");
+    }
+
+    /**
+     * Approve user email.
+     */
+    public function approveEmail(User $user)
+    {
+        if (!$user->email_verified_at) {
+            $user->email_verified_at = now();
+            $user->save();
+
+            return redirect()->back()->with('success', 'User email approved successfully.');
+        }
+
+        return redirect()->back()->with('info', 'User email is already approved.');
+    }
+
+    /**
+     * Disapprove user email.
+     */
+    public function disapproveEmail(User $user)
+    {
+        if ($user->email_verified_at) {
+            $user->email_verified_at = null;
+            $user->save();
+
+            return redirect()->back()->with('success', 'User email disapproved successfully.');
+        }
+
+        return redirect()->back()->with('info', 'User email is already disapproved.');
     }
 }

@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+}
+
+/* Mobile Header Dropdown Styles */
+.user-dropdown,
+.login-dropdown {
+    position: relative;
+}
+
+.user-dropdown[open] > summary,
+.login-dropdown[open] > summary {
+    opacity: 0.8;
+}
+
+.user-dropdown > summary,
+.login-dropdown > summary {
+    user-select: none;
+}
+
+.user-dropdown[open] .dropdown-menu,
+.login-dropdown[open] .login-dropdown-menu {
+    display: block !important;
+}
+
+.user-dropdown .dropdown-menu,
+.login-dropdown .login-dropdown-menu {
+    display: none !important;
+}
+
+.dropdown-item {
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+/* Fix dropdown visibility - ensure parent doesn't clip content */
+.user-dropdown,
+.login-dropdown {
+    overflow: visible !important;
+}
+
+.elementor-button-wrapper .user-dropdown,
+.elementor-button-wrapper .login-dropdown {
+    overflow: visible !important;
+}
+.elementor-button-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+}
+/* Hamburger Menu Toggle Styles */
+.elementor-menu-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.elementor-menu-toggle__icon--open,
+.elementor-menu-toggle__icon--close {
+    font-size: 24px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.elementor-menu-toggle[aria-expanded="false"]
+    .elementor-menu-toggle__icon--open {
+    display: flex;
+    opacity: 1;
+}
+
+.elementor-menu-toggle[aria-expanded="false"]
+    .elementor-menu-toggle__icon--close {
+    display: none;
+    opacity: 0;
+}
+
+.elementor-menu-toggle[aria-expanded="true"]
+    .elementor-menu-toggle__icon--open {
+    display: none;
+    opacity: 0;
+}
+
+.elementor-menu-toggle[aria-expanded="true"]
+    .elementor-menu-toggle__icon--close {
+    display: flex;
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .elementor-nav-menu--main {
+        display: none;
+    }
+
+    .elementor-menu-toggle {
+        display: flex;
+    }
+}
