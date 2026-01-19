@@ -13,16 +13,26 @@ class StudentProfileController extends Controller
     {
         $user = Auth::user();
         
+<<<<<<< HEAD
         // Redirect if profile already exists
         if ($user->studentProfile) {
             return redirect('/' . $user->role)->with('info', 'Profile already completed.');
         }
 
         return view('profile.student-form');
+=======
+        // // Redirect if profile already exists
+        // if ($user->studentProfile) {
+        //     return redirect('/' . $user->role)->with('info', 'Profile already completed.');
+        // }
+
+        return view('forms.student-form');
+>>>>>>> deepali
     }
 
     public function store(Request $request)
     {
+<<<<<<< HEAD
         $user = Auth::user();
 
         $validated = $request->validate([
@@ -51,6 +61,46 @@ class StudentProfileController extends Controller
         if ($request->hasFile('id_document')) {
             $path = $request->file('id_document')->store('documents', 'public');
             $validated['id_document_path'] = $path;
+=======
+        // dd('heloo');
+        $user = Auth::user();
+
+       $validated = $request->validate([
+    'full_name' => 'required|string|max:255',
+    'dob' => 'nullable|date',
+    'id_type' => 'nullable|string',
+    'id_no' => 'nullable|string',
+    'phone' => 'required|string',
+    'email' => 'required|email',
+
+    'whatsapp' => 'nullable|string',
+    'address' => 'nullable|string',
+    'city' => 'nullable|string',
+    'state' => 'nullable|string',
+    'country' => 'nullable|string',
+    'post_code' => 'nullable|string',
+
+    'id_document' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+    'exam_purpose' => 'nullable|string',
+    'highest_education' => 'nullable|string',
+    'passing_year' => 'nullable|numeric',
+    'preferred_countries' => 'nullable|array',
+
+    'bank_name' => 'nullable|string',
+    'bank_country' => 'nullable|string',
+    'account_no' => 'nullable|string',
+    're_upload_id_document' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+
+    'consent' => 'required|accepted',
+]);
+
+        if ($request->hasFile('id_document')) {
+            $validated['id_document'] = $request->file('id_document')->store('documents', 'public');
+        }
+
+        if ($request->hasFile('re_upload_id_document')) {
+            $validated['re_upload_id_document'] = $request->file('re_upload_id_document')->store('documents', 'public');
+>>>>>>> deepali
         }
 
         $validated['user_id'] = $user->id;

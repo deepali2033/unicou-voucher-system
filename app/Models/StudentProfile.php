@@ -10,24 +10,44 @@ class StudentProfile extends Model
         'user_id',
         'full_name',
         'dob',
+<<<<<<< HEAD
         'id_document_type',
         'id_document_no',
         'contact_no',
         'email',
         'detail_address',
+=======
+        'id_type',
+        'id_no',
+        'phone',
+        'email',
+        'whatsapp',
+        'address',
+>>>>>>> deepali
         'city',
         'state',
         'country',
         'post_code',
+<<<<<<< HEAD
         'whatsapp_no',
         'id_document_path',
         'purpose_of_exam',
+=======
+        'id_document',
+        'exam_purpose',
+>>>>>>> deepali
         'highest_education',
         'passing_year',
         'preferred_countries',
         'bank_name',
+<<<<<<< HEAD
         'bank_address',
         'bank_account_no',
+=======
+        'bank_country',
+        'account_no',
+        're_upload_id_document',
+>>>>>>> deepali
     ];
 
     protected $casts = [

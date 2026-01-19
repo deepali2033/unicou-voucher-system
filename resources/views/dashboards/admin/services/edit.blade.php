@@ -4,7 +4,7 @@
 @section('page-title', 'Edit Service: ' . $service->name)
 
 @section('page-actions')
-    <a href="{{ route('admin.users.index') }}" class="btn btn-t-g">
+    <a href="{{ route('admin.services.index') }}" class="btn btn-t-g">
         <i class="fas fa-arrow-left me-2"></i>Back to Services
     </a>
 @endsection
@@ -124,15 +124,20 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="image" class="form-label">Service Image</label>
-                                @if($service->image)
-                                    <div class="mb-2">
-                                        <img src="{{ asset('storage/' . $service->image) }}"
-                                             alt="{{ $service->name }}"
-                                             class="img-fluid rounded-circle koa-tb-img"
-                                             style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #3ca200;">
-                                        <div class="form-text text-muted">Current image</div>
+                                <div id="image-preview-container" class="mb-2"{{ $service->image ? '' : ' style="display: none;"' }}>
+                                    <img id="image-preview"
+                                         src="{{ $service->image ? asset('storage/' . $service->image) : '' }}"
+                                         alt="{{ $service->name }}"
+                                         class="img-fluid rounded-circle koa-tb-img"
+                                         style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #3ca200;">
+                                    <div class="form-text" id="image-status">
+                                        @if($service->image)
+                                            <span class="text-muted">Current image</span>
+                                        @else
+                                            <span class="text-success">Image preview</span>
+                                        @endif
                                     </div>
-                                @endif
+                                </div>
                                 <input type="file" class="form-control @error('image') is-invalid @enderror"
                                        id="image" name="image" accept="image/*">
                                 @error('image')
@@ -275,7 +280,7 @@
             <div class="card shadow-sm border-0 koa-tb-card mt-4" style="background-color: #f4f6f0;">
                 <div class="card-body p-4 koa-tb-cnt">
                     <div class="d-flex justify-content-between gap-3">
-                        <a href="{{ route('admin.users.index') }}" class="btn koa-badge-green-outline fw-medium px-4 py-2">
+                        <a href="{{ route('admin.services.index') }}" class="btn koa-badge-green-outline fw-medium px-4 py-2">
                             <i class="fas fa-times me-2"></i>Cancel
                         </a>
                         <button type="submit" class="btn koa-badge-green fw-medium px-4 py-2">
@@ -339,6 +344,40 @@ document.addEventListener('DOMContentLoaded', function() {
             button.style.display = buttons.length > 1 ? 'block' : 'none';
         });
     }
+
+    // Image preview functionality
+    const imageInput = document.getElementById('image');
+    const imagePreview = document.getElementById('image-preview');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imageStatus = document.getElementById('image-status');
+
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Check if file is an image
+            if (!file.type.match('image.*')) {
+                alert('Please select a valid image file');
+                imageInput.value = '';
+                return;
+            }
+
+            // Check file size (max 2MB)
+            if (file.size > 2048 * 1024) {
+                alert('File size must be less than 2MB');
+                imageInput.value = '';
+                return;
+            }
+
+            // Display preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreviewContainer.style.display = 'block';
+                imageStatus.innerHTML = '<span class="text-success">New image preview (will replace current image on save)</span>';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
     // Initialize remove buttons
     updateRemoveButtons('features');

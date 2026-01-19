@@ -72,11 +72,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/personal-info', [PersonalInfoController::class, 'create'])->name('profile.personal.form');
     Route::post('/personal-info', [PersonalInfoController::class, 'store'])->name('profile.personal.store');
 
+<<<<<<< HEAD
     // Student Profile Form
     Route::get('/student-profile', [StudentProfileController::class, 'showForm'])->name('profile.student.form');
     Route::post('/student-profile', [StudentProfileController::class, 'store'])->name('profile.student.store');
 });
 
+=======
+   
+});
+
+ // Student Profile Form
+    Route::get('/student-profile', [StudentProfileController::class, 'showForm'])->name('forms.student.form');
+    Route::post('/student-profile', [StudentProfileController::class, 'store'])->name('student.store');
+>>>>>>> deepali
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin', [DashboardController::class, 'admin'])->middleware('role:admin');
     Route::get('/manager', [DashboardController::class, 'manager'])->middleware('role:manager');
